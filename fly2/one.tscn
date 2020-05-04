@@ -1,0 +1,125 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://scripts/actor.gd" type="Script" id=1]
+[ext_resource path="res://axis.tscn" type="PackedScene" id=2]
+[ext_resource path="res://red.tres" type="Material" id=3]
+[ext_resource path="res://blue.tres" type="Material" id=4]
+[ext_resource path="res://green.tres" type="Material" id=5]
+[ext_resource path="res://engine.tscn" type="PackedScene" id=6]
+
+[sub_resource type="CubeMesh" id=1]
+
+[sub_resource type="Shader" id=2]
+code = "shader_type spatial;
+render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,specular_schlick_ggx;
+uniform vec4 albedo : hint_color;
+uniform sampler2D texture_albedo : hint_albedo;
+uniform float specular;
+uniform float metallic;
+uniform float roughness : hint_range(0,1);
+uniform float point_size : hint_range(0,128);
+uniform vec3 uv1_scale;
+uniform vec3 uv1_offset;
+uniform vec3 uv2_scale;
+uniform vec3 uv2_offset;
+
+
+void vertex() {
+	UV=UV*uv1_scale.xy+uv1_offset.xy;
+}
+
+
+
+
+void fragment() {
+	vec2 base_uv = UV;
+	vec4 albedo_tex = texture(texture_albedo,base_uv);
+	ALBEDO = albedo.rgb * albedo_tex.rgb;
+	METALLIC = metallic;
+	ROUGHNESS = roughness;
+	SPECULAR = specular;
+}
+"
+
+[sub_resource type="ShaderMaterial" id=3]
+shader = SubResource( 2 )
+shader_param/albedo = Color( 0.803922, 0.964706, 0.823529, 1 )
+shader_param/specular = 0.5
+shader_param/metallic = 0.0
+shader_param/roughness = 1.0
+shader_param/point_size = 1.0
+shader_param/uv1_scale = Vector3( 1, 1, 1 )
+shader_param/uv1_offset = Vector3( 0, 0, 0 )
+shader_param/uv2_scale = Vector3( 1, 1, 1 )
+shader_param/uv2_offset = Vector3( 0, 0, 0 )
+
+[sub_resource type="BoxShape" id=4]
+extents = Vector3( 9.75169, 0.0566164, 9.42692 )
+
+[sub_resource type="BoxShape" id=5]
+extents = Vector3( 0.300649, 1, 0.301322 )
+
+[sub_resource type="CubeMesh" id=6]
+
+[node name="Spatial" type="Spatial"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00342584, 0, -0.00722182 )
+
+[node name="floor" type="StaticBody" parent="."]
+
+[node name="MeshInstance" type="MeshInstance" parent="floor"]
+transform = Transform( 10, 0, 0, 0, 0.1, 0, 0, 0, 10, 1.62125e-05, -2.86102e-06, 1.33514e-05 )
+mesh = SubResource( 1 )
+material/0 = SubResource( 3 )
+
+[node name="MeshInstance3" type="CollisionShape" parent="floor"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125703, 0 )
+shape = SubResource( 4 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( -0.74349, -0.351045, 0.569201, 0.00148398, 0.850278, 0.526332, -0.668745, 0.392168, -0.631652, 8.19541, 7.93314, -6.61916 )
+doppler_tracking = 2
+current = true
+fov = 36.4
+near = 0.06
+
+[node name="actor" type="RigidBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.057, 0 )
+mass = 5.0
+linear_velocity = Vector3( 0, -9, 0 )
+script = ExtResource( 1 )
+
+[node name="MeshInstance2" type="MeshInstance" parent="actor"]
+transform = Transform( 0.3, 0, 0, 0, 1, 0, 0, 0, 0.3, 0, 0.5, 0 )
+mesh = SubResource( 1 )
+material/0 = ExtResource( 3 )
+
+[node name="rocket-collide" type="CollisionShape" parent="actor"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0 )
+shape = SubResource( 5 )
+
+[node name="engine" parent="actor" instance=ExtResource( 6 )]
+
+[node name="engine3" parent="actor" instance=ExtResource( 6 )]
+transform = Transform( 0.141574, 0, 0, 0, 0.211261, 0, 0, 0, 0.141574, 0, -0.268259, -0.454492 )
+
+[node name="resultant" parent="actor" instance=ExtResource( 2 )]
+transform = Transform( 0.629722, 0, 0, 0, 0.422001, 0, 0, 0, 0.629722, -0.00808072, 2.30488, 0.020903 )
+
+[node name="Axis" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1.27123, 2.6043, -0.239821 )
+visible = false
+
+[node name="MeshInstance" type="MeshInstance" parent="Axis"]
+transform = Transform( 0.02, 0, 0, 0, 1, 0, 0, 0, 0.02, 0, 0.982185, 0 )
+mesh = SubResource( 6 )
+material/0 = ExtResource( 5 )
+
+[node name="MeshInstance2" type="MeshInstance" parent="Axis"]
+transform = Transform( -8.74228e-10, 1, 0, -0.02, -4.37114e-08, 0, 0, 0, 0.02, 0.955324, 0.0306619, 0 )
+mesh = SubResource( 6 )
+material/0 = ExtResource( 3 )
+
+[node name="MeshInstance3" type="MeshInstance" parent="Axis"]
+transform = Transform( 3.82137e-17, -4.37114e-08, -0.02, -0.02, -4.37114e-08, 0, -8.74228e-10, 1, -8.74228e-10, -0.000647217, 0.0306619, 0.942771 )
+mesh = SubResource( 6 )
+material/0 = ExtResource( 4 )
